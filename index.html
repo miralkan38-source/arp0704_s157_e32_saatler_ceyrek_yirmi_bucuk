@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>السّاعات - Arapça Saat Öğrenme Oyunu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React and ReactDOM UMD Builds -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel Standalone to compile JSX in-browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Google Fonts for Amiri fallback -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap');
+        .font-arabic { 
+            font-family: 'Arakom', 'Amiri', serif; 
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center m-0">
+
+    <!-- Preloaded Audio Element for 1.mp3 -->
+    <audio id="start-audio" src="1.mp3" preload="auto"></audio>
+
+    <div id="root" class="w-full"></div>
+
+    <script type="text/babel">
+        const RotateCcw = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+            </svg>
+        );
+
+        const CheckCircle2 = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m9 12 2 2 4-4"/>
+            </svg>
+        );
+
+        const XCircle = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6"/><path d="m9 9 6 6"/>
+            </svg>
+        );
+
+        const PlayCircle = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10"/>
+                <polygon points="10 8 16 12 10 16 10 8"/>
+            </svg>
+        );
+
+        const Trophy = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"/>
+                <path d="M12 2a6 6 0 0 1 6 6v1H6V8a6 6 0 0 1 6-6z"/>
+            </svg>
+        );
+
+        const ArrowRight = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+            </svg>
+        );
+
+        const ArrowLeft = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>
+            </svg>
+        );
+
+        const ARABIC_NUMBERS = ['١٢', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩', '١٠', '١١'];
+
+        const HOUR_TEXTS = {
+          12: 'السّاعَة الثّانِيَة عَشْرَة',
+          1: 'السّاعَة الواحِدَة',
+          2: 'السّاعَة الثّانِيَة',
+          3: 'السّاعَة الثّalِثَة',
+          4: 'السّاعَة الرّابِعَة',
+          5: 'السّاعَة الخامِسَة',
+          6: 'السّاعَة السّادِسَة',
+          7: 'السّاعَة السّابِعَة',
+          8: 'السّاعَة الثّامِنَة',
+          9: 'السّاعَة التّاسِعَة',
+          10: 'السّاعَة العاشِرَة',
+          11: 'السّاعَة الحادِيَة عَشْرَة',
+        };
+
+        const MINUTE_TEXTS = {
+          15: 'وَالرُّبْع',   
+          20: 'وَالثُّلُث',   
+          30: 'وَالنِّصْف',  
+        };
+
+        const MINUTE_OPTIONS = [15, 20, 30];
+
+        const toArabicDigits = (num) => {
+          const digits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+          return String(num).replace(/[0-9]/g, (w) => digits[+w]);
+        };
+
+        const playSound = (type) => {
+          try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const now = ctx.currentTime;
+
+            if (type === 'click') {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(600, now);
+              osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+              gain.gain.setValueAtTime(0.1, now);
+              gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+              osc.start(now);
+              osc.stop(now + 0.05);
+            } else if (type === 'correct') {
+              const playNote = (freq, start, duration) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, start);
+                gain.gain.setValueAtTime(0.12, start);
+                gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+                osc.start(start);
+                osc.stop(start + duration);
+              };
+              playNote(523.25, now, 0.12);        
+              playNote(659.25, now + 0.08, 0.12); 
+              playNote(783.99, now + 0.16, 0.12); 
+              playNote(1046.50, now + 0.24, 0.25); 
+            } else if (type === 'wrong') {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(150, now);
+              osc.frequency.linearRampToValueAtTime(75, now + 0.35);
+              gain.gain.setValueAtTime(0.15, now);
+              gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+              osc.start(now);
+              osc.stop(now + 0.35);
+            }
+          } catch (error) {
+            console.warn("Sentez ses çalınamadı:", error);
+          }
+        };
+
+        const Clock = ({ hour, minute }) => {
+          const hourRotation = (hour % 12) * 30 + (minute / 60) * 30;
+          const minuteRotation = minute * 6;
+
+          return (
+            <div className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-full border-[8px] md:border-[10px] border-slate-800 bg-white shadow-2xl flex items-center justify-center mx-auto transition-all duration-500 hover:shadow-cyan-100/50">
+              {ARABIC_NUMBERS.map((num, i) => {
+                const angle = (i * 30) - 90;
+                const radius = 38; 
+                const x = 50 + radius * Math.cos((angle * Math.PI) / 180);
+                const y = 50 + radius * Math.sin((angle * Math.PI) / 180);
+                
+                return (
+                  <div
+                    key={i}
+                    className="absolute text-xl sm:text-2xl md:text-3xl font-bold text-red-600 select-none font-arabic"
+                    style={{
+                      left: `${x}%`,
+                      top: `${y}%`,
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  >
+                    {num}
+                  </div>
+                );
+              })}
+
+              {/* Yelkovan */}
+              <div 
+                className="absolute bottom-1/2 left-1/2 w-1 md:w-1.5 h-[38%] bg-slate-400 rounded-full origin-bottom -translate-x-1/2 z-10 transition-transform duration-1000 ease-out"
+                style={{ transform: `translateX(-50%) rotate(${minuteRotation}deg)` }}
+              >
+                <div className="absolute -top-1 left-0 w-full h-4 bg-slate-400 rounded-full"></div>
+              </div>
+
+              {/* Akrep */}
+              <div 
+                className="absolute bottom-1/2 left-1/2 w-2 md:w-2.5 h-[26%] bg-slate-900 rounded-full origin-bottom -translate-x-1/2 z-20 transition-transform duration-1000 cubic-bezier(0.4, 0, 0.2, 1)"
+                style={{ transform: `translateX(-50%) rotate(${hourRotation}deg)` }}
+              >
+                <div className="absolute -top-1 left-0 w-full h-4 bg-slate-900 rounded-full"></div>
+              </div>
+
+              {/* Merkez Mili */}
+              <div className="absolute w-4 h-4 md:w-5 md:h-5 bg-slate-900 rounded-full z-30 shadow-md border-2 border-slate-700"></div>
+              <div className="absolute w-1.5 h-1.5 md:w-2 md:h-2 bg-slate-400 rounded-full z-40"></div>
+            </div>
+          );
+        };
+
+        const App = () => {
+          const [gameState, setGameState] = React.useState('start'); // start, playing, finished
+          const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0); 
+          const [questionsList, setQuestionsList] = React.useState([]); 
+          const [isVirtualFullscreen, setIsVirtualFullscreen] = React.useState(false); 
+
+          const generateQuizQuestions = () => {
+            let pool = [];
+            for (let h = 1; h <= 12; h++) {
+              for (let m of MINUTE_OPTIONS) {
+                pool.push({ hour: h, minute: m });
+              }
+            }
+
+            const shuffledPool = pool.sort(() => 0.5 - Math.random()).slice(0, 12);
+
+            const generated = shuffledPool.map((selectedTime) => {
+              const correctText = `${HOUR_TEXTS[selectedTime.hour]} ${MINUTE_TEXTS[selectedTime.minute]}`;
+
+              const alternativeMinutes = MINUTE_OPTIONS.filter(m => m !== selectedTime.minute);
+              const wrongMinute = alternativeMinutes[Math.floor(Math.random() * alternativeMinutes.length)];
+              const wrongText1 = `${HOUR_TEXTS[selectedTime.hour]} ${MINUTE_TEXTS[wrongMinute]}`;
+
+              const alternativeHours = Object.keys(HOUR_TEXTS).map(Number).filter(h => h !== selectedTime.hour);
+              const wrongHour = alternativeHours[Math.floor(Math.random() * alternativeHours.length)];
+              const randomWrongMinute = MINUTE_OPTIONS[Math.floor(Math.random() * MINUTE_OPTIONS.length)];
+              const wrongText2 = `${HOUR_TEXTS[wrongHour]} ${MINUTE_TEXTS[randomWrongMinute]}`;
+
+              const options = [
+                { text: correctText, isCorrect: true, hour: selectedTime.hour },
+                { text: wrongText1, isCorrect: false, hour: selectedTime.hour },
+                { text: wrongText2, isCorrect: false, hour: wrongHour }
+              ].sort(() => 0.5 - Math.random());
+
+              return {
+                targetTime: selectedTime,
+                options: options,
+                // Gelişmiş aşamalı cevap durumları:
+                // status: 'unanswered', 'first_wrong', 'first_retry_ready', 'correct_first', 'correct_second', 'failed'
+                status: 'unanswered',
+                firstAnswerIndex: null,
+                secondAnswerIndex: null,
+                isCorrect: null,
+              };
+            });
+
+            setQuestionsList(generated);
+          };
+
+          const playWebAudioStartChime = () => {
+            try {
+              const AudioContext = window.AudioContext || window.webkitAudioContext;
+              if (!AudioContext) return;
+              const ctx = new AudioContext();
+              const now = ctx.currentTime;
+              
+              const notes = [261.63, 329.63, 392.00, 493.88, 523.25]; 
+              notes.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.08, now + idx * 0.05 + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+                
+                osc.start(now);
+                osc.stop(now + 1.5);
+              });
+            } catch (err) {
+              console.warn("Sentez yedek ses hatası:", err);
+            }
+          };
+
+          const handleStart = () => {
+            // Butona ilk dokunulduğunda click sesini anında çal
+            playSound('click');
+            
+            // 1.mp3 Dosyasını doğrudan çalmayı dener
+            try {
+              const audioObj = document.getElementById('start-audio');
+              if (audioObj) {
+                audioObj.play()
+                  .catch((err) => {
+                    console.warn("HTML Audio çalışmadı, yeni nesne deneniyor:", err);
+                    const dynamicAudio = new Audio('1.mp3');
+                    dynamicAudio.play().catch((errDynamic) => {
+                      console.warn("1.mp3 yüklenemedi, sentez ses çalınıyor:", errDynamic);
+                      playWebAudioStartChime();
+                    });
+                  });
+              } else {
+                playWebAudioStartChime();
+              }
+            } catch (error) {
+              console.warn("Ses çalınamadı, sentez başlatılıyor.");
+              playWebAudioStartChime();
+            }
+
+            // Sanal Tam Ekran (CSS tabanlı tam ekran garanti çalışır)
+            setIsVirtualFullscreen(true);
+
+            // Gerçek tam ekran denemesi
+            try {
+              const docEl = document.documentElement;
+              if (docEl.requestFullscreen) {
+                docEl.requestFullscreen().catch(err => console.warn("Fullscreen engellendi:", err));
+              } else if (docEl.webkitRequestFullscreen) {
+                docEl.webkitRequestFullscreen();
+              }
+            } catch (fullscreenError) {
+              console.warn("Cihaz tam ekran API desteklemiyor.");
+            }
+
+            generateQuizQuestions();
+            setCurrentQuestionIndex(0);
+            setGameState('playing');
+          };
+
+          const handleAnswer = (optionIndex, isCorrect) => {
+            const currentQ = questionsList[currentQuestionIndex];
+            if (currentQ.status !== 'unanswered' && currentQ.status !== 'first_retry_ready') return;
+
+            const updatedQuestions = [...questionsList];
+            const targetQ = updatedQuestions[currentQuestionIndex];
+
+            if (targetQ.status === 'unanswered') {
+              // İLK DENEME
+              targetQ.firstAnswerIndex = optionIndex;
+              if (isCorrect) {
+                targetQ.status = 'correct_first';
+                targetQ.isCorrect = true;
+                playSound('correct');
+              } else {
+                targetQ.status = 'first_wrong';
+                targetQ.isCorrect = null; // Henüz tamamen yanlış değil, retry hakkı var
+                playSound('wrong');
+              }
+            } else if (targetQ.status === 'first_retry_ready') {
+              // İKİNCİ VE SON DENEME
+              targetQ.secondAnswerIndex = optionIndex;
+              if (isCorrect) {
+                targetQ.status = 'correct_second';
+                targetQ.isCorrect = true;
+                playSound('correct');
+              } else {
+                targetQ.status = 'failed';
+                targetQ.isCorrect = false; // Tamamen yanlış yaptı
+                playSound('wrong');
+              }
+            }
+
+            setQuestionsList(updatedQuestions);
+          };
+
+          const handleRetryQuestion = () => {
+            playSound('click');
+            const updatedQuestions = [...questionsList];
+            const targetQ = updatedQuestions[currentQuestionIndex];
+            
+            // Sadece ilk denemede yanlış yapmışsa yeniden denemeye izin ver
+            if (targetQ.status === 'first_wrong') {
+              targetQ.status = 'first_retry_ready';
+            }
+            setQuestionsList(updatedQuestions);
+          };
+
+          const handleNext = () => {
+            playSound('click');
+            if (currentQuestionIndex < 11) {
+              setCurrentQuestionIndex(prev => prev + 1);
+            } else {
+              setGameState('finished');
+            }
+          };
+
+          const handlePrev = () => {
+            playSound('click');
+            if (currentQuestionIndex > 0) {
+              setCurrentQuestionIndex(prev => prev - 1);
+            }
+          };
+
+          // Puanı sadece isCorrect === true olan sorulardan hesapla
+          const currentScore = questionsList.reduce((acc, q) => (q.isCorrect ? acc + 10 : acc), 0);
+          const currentQuestionData = questionsList[currentQuestionIndex];
+
+          const resetGame = () => {
+            playSound('click');
+            setGameState('start');
+            setCurrentQuestionIndex(0);
+            setQuestionsList([]);
+          };
+
+          return (
+            <div className={`min-h-screen bg-slate-100 flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 font-sans text-slate-800 selection:bg-amber-100 ${isVirtualFullscreen ? 'fixed inset-0 z-[9999] w-screen h-screen overflow-y-auto' : ''}`} dir="rtl">
+              <div className="w-full max-w-4xl bg-white rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] shadow-2xl p-4 sm:p-6 md:p-10 lg:p-12 text-center border border-white/50 relative transition-all duration-300">
+                
+                {/* Giriş Ekranı */}
+                {gameState === 'start' && (
+                  <div className="max-w-xl mx-auto py-6 sm:py-10 space-y-6 sm:space-y-8">
+                    <div className="bg-amber-100 w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-2 sm:mb-4 -rotate-3 transition-transform hover:rotate-0 duration-300">
+                      <PlayCircle className="w-10 h-10 sm:w-14 sm:h-14 text-amber-600" />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 mb-2 sm:mb-3 font-arabic tracking-tight">السّاعات</h1>
+                      <p className="text-slate-500 text-base sm:text-lg md:text-xl font-arabic leading-relaxed">هَلْ يُمْكِنُك إيجاد الكِتابَة العَرَبِيَّة لِلسّاعَة في الصّورَة؟</p>
+                      <p className="text-xs sm:text-sm text-amber-600 font-bold mt-2 font-arabic">
+                        (الرُّبْع، وَالثُّلُث، وَالنِّصْف)
+                      </p>
+                    </div>
+                    <button 
+                      onClick={handleStart}
+                      className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 sm:py-5 px-6 sm:px-8 rounded-xl sm:rounded-2xl shadow-xl shadow-amber-200 transform transition hover:-translate-y-1 active:scale-95 text-lg sm:text-xl md:text-2xl font-arabic"
+                    >
+                      اِبْدَأْ
+                    </button>
+                  </div>
+                )}
+
+                {/* Oyun Alanı */}
+                {gameState === 'playing' && currentQuestionData && (
+                  <div>
+                    
+                    {/* Üst Kısım: Soru Sayısı, Büyük Yönerge ve Puan Kartı */}
+                    <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 md:mb-10 gap-4 sm:gap-2" dir="rtl">
+                      {/* Soru Sayısı */}
+                      <div className="flex flex-row sm:flex-col items-center sm:items-start text-right gap-2 sm:gap-0">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-arabic">السُّؤال: </span>
+                        <span className="text-xl sm:text-2xl md:text-3xl font-black text-slate-800 font-arabic">
+                          {toArabicDigits(currentQuestionIndex + 1)}
+                          <span className="text-slate-300">/{toArabicDigits(12)}</span>
+                        </span>
+                      </div>
+
+                      {/* Yönerge (Genişletilmiş Font) */}
+                      <div className="text-center flex-1 mx-2">
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-700 font-arabic leading-relaxed px-2">
+                          اِخْتَر الجَواب الصَّحيح حَسَب السّاعَة.
+                        </h2>
+                      </div>
+
+                      {/* Kazanılan Puan */}
+                      <div className="flex flex-row sm:flex-col items-center sm:items-end text-left gap-2 sm:gap-0">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-arabic">النُّقاط: </span>
+                        <span className="text-xl sm:text-2xl md:text-3xl font-black text-amber-500 font-arabic">
+                          {toArabicDigits(currentScore)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Yan Yana Yerleşim Konteyneri */}
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-8 lg:gap-12 mt-4 sm:mt-6" dir="ltr">
+                      
+                      {/* Sol Taraf: Analog Saat */}
+                      <div className="w-full md:w-1/2 flex justify-center items-center p-2">
+                        <Clock hour={currentQuestionData.targetTime.hour} minute={currentQuestionData.targetTime.minute} />
+                      </div>
+
+                      {/* Sağ Taraf: Dinamik Renklendirilen Seçenekler */}
+                      <div className="w-full md:w-1/2 grid grid-cols-1 gap-3 sm:gap-4 self-center" dir="rtl">
+                        {currentQuestionData.options.map((opt, idx) => {
+                          const status = currentQuestionData.status;
+                          const isFirstAnswer = currentQuestionData.firstAnswerIndex === idx;
+                          const isSecondAnswer = currentQuestionData.secondAnswerIndex === idx;
+
+                          let btnStyle = "bg-white border-slate-200 text-slate-700 hover:border-amber-400 hover:bg-amber-50 hover:shadow-md active:scale-95";
+                          let isDisabled = false;
+
+                          // Seçenekleri durum yönetimimize göre özel olarak renklendiriyoruz:
+                          if (status === 'correct_first') {
+                            isDisabled = true;
+                            if (isFirstAnswer) {
+                              btnStyle = "bg-green-500 border-green-500 text-white shadow-lg shadow-green-100";
+                            } else {
+                              btnStyle = "bg-slate-50 border-slate-100 text-slate-300";
+                            }
+                          } 
+                          else if (status === 'first_wrong') {
+                            isDisabled = true;
+                            if (isFirstAnswer) {
+                              // Yanlış cevap verildiğinde sadece seçilen kırmızı kalır, doğru olan yeşil yapılmaz!
+                              btnStyle = "bg-red-500 border-red-500 text-white shadow-lg shadow-red-100";
+                            } else {
+                              btnStyle = "bg-slate-50 border-slate-100 text-slate-300";
+                            }
+                          } 
+                          else if (status === 'first_retry_ready') {
+                            if (isFirstAnswer) {
+                              // İlk yanlış seçilen şık sönük ve tıklanamaz olarak kalır
+                              btnStyle = "bg-red-100 border-red-200 text-red-400 opacity-60 cursor-not-allowed";
+                              isDisabled = true;
+                            }
+                          } 
+                          else if (status === 'correct_second') {
+                            isDisabled = true;
+                            if (isSecondAnswer) {
+                              btnStyle = "bg-green-500 border-green-500 text-white shadow-lg shadow-green-100";
+                            } else if (isFirstAnswer) {
+                              btnStyle = "bg-red-100 border-red-200 text-red-400 opacity-50";
+                            } else {
+                              btnStyle = "bg-slate-50 border-slate-100 text-slate-300";
+                            }
+                          } 
+                          else if (status === 'failed') {
+                            isDisabled = true;
+                            if (opt.isCorrect) {
+                              // İkinci kez de yanlış yapılınca doğru cevap nihayet gösterilir
+                              btnStyle = "bg-green-500 border-green-500 text-white shadow-lg shadow-green-100";
+                            } else if (isFirstAnswer || isSecondAnswer) {
+                              btnStyle = "bg-red-500 border-red-500 text-white shadow-lg shadow-red-100";
+                            } else {
+                              btnStyle = "bg-slate-50 border-slate-100 text-slate-300";
+                            }
+                          }
+
+                          return (
+                            <button
+                              key={idx}
+                              disabled={isDisabled}
+                              onClick={() => handleAnswer(idx, opt.isCorrect)}
+                              className={`
+                                w-full py-4 sm:py-5 px-4 sm:px-6 rounded-xl sm:rounded-2xl border-2 text-lg sm:text-xl md:text-2xl font-arabic transition-all duration-300 flex justify-center items-center text-center leading-normal min-h-[64px] sm:min-h-[76px]
+                                ${btnStyle}
+                              `}
+                            >
+                              {opt.text}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                    </div>
+
+                    {/* Bildirim Alanı ve Ortalanmış Yeniden Dene Butonu */}
+                    <div className="min-h-[75px] sm:min-h-[96px] mt-4 flex flex-col items-center justify-center gap-3 sm:gap-4">
+                      {/* Doğru ya da Tamamen Yanlış durumunda bildirim mesajı */}
+                      {(currentQuestionData.status === 'correct_first' || currentQuestionData.status === 'correct_second') && (
+                        <div className="flex items-center gap-2 font-bold text-lg sm:text-xl font-arabic text-green-600">
+                          <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" /> إِجابَة صَحيحَة!
+                        </div>
+                      )}
+
+                      {(currentQuestionData.status === 'first_wrong' || currentQuestionData.status === 'failed') && (
+                        <div className="flex items-center gap-2 font-bold text-lg sm:text-xl font-arabic text-red-500">
+                          <XCircle className="w-5 h-5 sm:w-6 sm:h-6" /> لِلْأَسَف، إِجابَة خاطِئَة!
+                        </div>
+                      )}
+
+                      {/* Sadece 1. yanlış denemede beliren "Yeniden Dene" Butonu */}
+                      {currentQuestionData.status === 'first_wrong' && (
+                        <button
+                          onClick={handleRetryQuestion}
+                          className="flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg font-arabic bg-red-100 text-red-700 hover:bg-red-200 border-2 border-red-300 shadow-lg shadow-red-100 transition-all duration-300 active:scale-95 animate-bounce"
+                        >
+                          <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+                          حَاوِلْ مَرَّةً أُخْرى
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Alt Kısım: Yönlendirme Tuşları */}
+                    <div className="flex justify-between items-center w-full mt-4 pt-4 border-t border-slate-100" dir="rtl">
+                      {/* Sol Alt: Geri Tuşu */}
+                      <button
+                        onClick={handlePrev}
+                        disabled={currentQuestionIndex === 0}
+                        className={`flex items-center gap-1 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg font-arabic transition-all duration-300
+                          ${currentQuestionIndex === 0 
+                            ? 'bg-slate-100 text-slate-300 cursor-not-allowed' 
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200 active:scale-95'}`}
+                      >
+                        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-1" />
+                        السّابِق
+                      </button>
+
+                      {/* Sağ Alt: İleri Tuşu - Soru yanıtlanana kadar (doğru veya 2 kere yanlış yapılana kadar) kilitli kalır */}
+                      <button
+                        onClick={handleNext}
+                        disabled={currentQuestionData.status === 'unanswered' || currentQuestionData.status === 'first_wrong' || currentQuestionData.status === 'first_retry_ready'}
+                        className={`flex items-center gap-1 sm:gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg font-arabic transition-all duration-300 active:scale-95
+                          ${(currentQuestionData.status === 'unanswered' || currentQuestionData.status === 'first_wrong' || currentQuestionData.status === 'first_retry_ready')
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed opacity-50 shadow-none'
+                            : 'bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-100'}`}
+                      >
+                        {currentQuestionIndex === 11 ? 'إِنْهاء' : 'التّالي'}
+                        <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1" />
+                      </button>
+                    </div>
+
+                  </div>
+                )}
+
+                {/* Oyun Sonu Raporu */}
+                {gameState === 'finished' && (
+                  <div className="max-w-xl mx-auto py-6 sm:py-10 space-y-6 sm:space-y-8">
+                    <div className="relative">
+                      <div className="bg-amber-100 w-24 h-24 sm:w-28 sm:h-28 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Trophy className="w-12 h-12 sm:w-16 sm:h-16 text-amber-600" />
+                      </div>
+                      <div className="absolute top-0 left-1/4 animate-bounce text-xl sm:text-2xl">✨</div>
+                    </div>
+                    
+                    <h1 className="text-3xl sm:text-4xl font-black text-slate-900 font-arabic">اِكْتَمَلَت اللُّعْبَة!</h1>
+                    
+                    <div className="bg-slate-50 rounded-[1.5rem] sm:rounded-[2rem] p-6 sm:p-8 border border-slate-100" dir="ltr">
+                      <p className="text-slate-500 font-medium mb-1 uppercase tracking-widest text-xs sm:text-sm font-arabic">مُعَدَّل النَّجاح</p>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-5xl sm:text-7xl font-black text-slate-900 font-arabic">{toArabicDigits(currentScore)}</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-slate-300 font-arabic">/ {toArabicDigits(120)}</span>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={resetGame}
+                      className="w-full flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 sm:py-5 px-6 sm:px-8 rounded-xl sm:rounded-2xl shadow-xl transform transition active:scale-95 text-lg sm:text-xl font-arabic"
+                    >
+                      <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" /> حَاوِلْ مَرَّةً أُخْرى
+                    </button>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          );
+        };
+
+        // Render React Application
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
