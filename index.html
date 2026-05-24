@@ -85,7 +85,7 @@
           12: 'السّاعَة الثّانِيَة عَشْرَة',
           1: 'السّاعَة الواحِدَة',
           2: 'السّاعَة الثّانِيَة',
-          3: 'السّاعَة الثّalِثَة',
+          3: 'السّاعَة الثّالِثَة',
           4: 'السّاعَة الرّابِعَة',
           5: 'السّاعَة الخامِسَة',
           6: 'السّاعَة السّادِسَة',
@@ -218,6 +218,29 @@
           const [currentQuestionIndex, setCurrentQuestionIndex] = React.useState(0); 
           const [questionsList, setQuestionsList] = React.useState([]); 
           const [isVirtualFullscreen, setIsVirtualFullscreen] = React.useState(false); 
+
+          const autoAdvanceTimerRef = React.useRef(null);
+
+          // Soru doğru yanıtlandığında birkaç saniye (2 saniye) bekleyip sonraki soruya geçişi kontrol eden efekt
+          React.useEffect(() => {
+            const currentQ = questionsList[currentQuestionIndex];
+            if (currentQ && (currentQ.status === 'correct_first' || currentQ.status === 'correct_second')) {
+              autoAdvanceTimerRef.current = setTimeout(() => {
+                if (currentQuestionIndex < 11) {
+                  setCurrentQuestionIndex(prev => prev + 1);
+                } else {
+                  setGameState('finished');
+                }
+              }, 2000); // 2000 milisaniye (2 saniye) bekler
+            }
+
+            return () => {
+              // Kullanıcı manuel geçiş yaparsa veya oyun sıfırlanırsa zamanlayıcı temizlenir
+              if (autoAdvanceTimerRef.current) {
+                clearTimeout(autoAdvanceTimerRef.current);
+              }
+            };
+          }, [currentQuestionIndex, questionsList]);
 
           const generateQuizQuestions = () => {
             let pool = [];
@@ -505,11 +528,8 @@
                             }
                           } 
                           else if (status === 'first_retry_ready') {
-                            if (isFirstAnswer) {
-                              // İlk yanlış seçilen şık sönük ve tıklanamaz olarak kalır
-                              btnStyle = "bg-red-100 border-red-200 text-red-400 opacity-60 cursor-not-allowed";
-                              isDisabled = true;
-                            }
+                            // Yeniden dene denildiğinde, ilk yanlış yapılan seçeneğin tekrardan seçilebilir olması için 
+                            // buradaki kilit kaldırıldı. Şık normal durumuna geri döner.
                           } 
                           else if (status === 'correct_second') {
                             isDisabled = true;
